@@ -1,0 +1,71 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: detect-cycles
+  namespace: default
+spec:
+  workloadSelector:
+    labels:
+      app: service1
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.lua
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+          inlineCode: |
+            local request_limits = {}
+            local max_cache_size = 100
+            local lru_list = {}
+
+            local function touch_lru(key)
+              for i, v in ipairs(lru_list) do
+                if v == key then
+                  table.remove(lru_list, i)
+                  break
+                end
+              end
+              table.insert(lru_list, 1, key)
+            end
+
+            local function evict_lru()
+              local oldest_key = table.remove(lru_list)
+              if oldest_key then
+                request_limits[oldest_key] = nil
+              end
+            end
+
+            function envoy_on_request(request_handle)
+              local headers = request_handle:headers()
+              local trace_id = headers:get("x-b3-traceid")
+              local method = headers:get(":method")
+              local uri = headers:get(":path")
+              local key = method .. uri .. trace_id
+              local current_time = os.time()
+
+              if not request_limits[key] then
+                if #lru_list >= max_cache_size then
+                  evict_lru()
+                end
+                request_limits[key] = {count = 0, timestamp = current_time}
+              end
+
+              local data = request_limits[key]
+              data.timestamp = current_time
+              data.count = data.count + 1
+
+              touch_lru(key)
+
+              if data.count > 5 then
+                request_handle:respond(
+                  {
+                    [":status"] = "429"
+                  },
+                  "Too Many Requests"
+                )
+              end
+            end
