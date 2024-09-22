@@ -41,7 +41,7 @@ jobs:
     # Deploy services using Helm
     - name: Deploy Services
       run: |
-        helm upgrade --install my-test-services ./test-services
+        helm upgrade --install test-services ./test-services
 
     # Apply EnvoyFilter
     - name: Apply EnvoyFilter

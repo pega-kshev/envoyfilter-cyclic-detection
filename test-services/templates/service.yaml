@@ -1,15 +1,20 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "test-services.fullname" . }}
-  labels:
-    {{- include "test-services.labels" . | nindent 4 }}
+  name: {{ .Values.serviceA.name }}
 spec:
-  type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
+    - port: 8080
   selector:
-    {{- include "test-services.selectorLabels" . | nindent 4 }}
+    app: {{ .Values.serviceA.name }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.serviceB.name }}
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: {{ .Values.serviceB.name }}
