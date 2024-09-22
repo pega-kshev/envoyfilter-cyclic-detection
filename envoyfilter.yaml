@@ -4,9 +4,6 @@ metadata:
   name: detect-cycles
   namespace: default
 spec:
-  workloadSelector:
-    labels:
-      app: service1
   configPatches:
   - applyTo: HTTP_FILTER
     match:
