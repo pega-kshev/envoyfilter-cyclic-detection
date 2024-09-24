@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 import requests
 import logging
@@ -15,7 +16,12 @@ service_a_url = os.getenv('SERVICE_A_URL', 'http://servicea:8080')
 
 @app.route('/')
 def call_serviceA():
+    logging.info(f"Received request with headers: {request.headers}")
     trace_id = request.headers.get('x-b3-traceid', 'default-trace-id')
+    span_id = request.headers.get('x-b3-spanid', 'default-span-id')
+    parent_span_id = request.headers.get('x-b3-parentspanid', 'default-parent-span-id')
+    sampled = request.headers.get('x-b3-sampled', '1')
+    flags = request.headers.get('x-b3-flags', '0')
     hopcount = int(request.headers.get('hopcount', 0))
 
     # Increment hop count
@@ -26,15 +32,26 @@ def call_serviceA():
 
     headers = {
         'x-b3-traceid': trace_id,
+        'x-b3-spanid': span_id,
+        'x-b3-parentspanid': parent_span_id,
+        'x-b3-sampled': sampled,
+        'x-b3-flags': flags,
         'hopcount': str(hopcount)
     }
 
+    response_code = 500
     try:
         response = requests.get(service_a_url, headers=headers)
+        response_code = response.status_code
+
+        # Check if the response is 429 and propagate it
+        if response.status_code == 429:
+            return jsonify(error="Too Many Requests"), 429
+
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         logging.error(f"Error calling ServiceA: {e}")
-        return jsonify(error="ServiceA call failed"), 500
+        return jsonify(error="ServiceA call failed"), response_code
 
     return f"ServiceB called ServiceA with trace ID: {trace_id}\nResponse from ServiceA: {response.text}"
 
