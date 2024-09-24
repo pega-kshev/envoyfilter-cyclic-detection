@@ -15,6 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # Install conntrack
+      - name: Install conntrack
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y conntrack
+          
       # Set up Minikube
       - name: Set up Minikube
         run: |
