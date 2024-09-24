@@ -17,6 +17,9 @@ spec:
         image: {{ .Values.serviceA.image }}
         ports:
         - containerPort: {{ .Values.serviceA.port }}
+        env:
+        - name: SERVICE_B_URL
+          value: http://{{ .Values.serviceB.name }}:{{ .Values.serviceB.port }}
 
 ---
 apiVersion: apps/v1
@@ -38,3 +41,6 @@ spec:
         image: {{ .Values.serviceB.image }}
         ports:
         - containerPort: {{ .Values.serviceB.port }}
+        env:
+        - name: SERVICE_A_URL
+          value: http://{{ .Values.serviceA.name }}:{{ .Values.serviceA.port }}

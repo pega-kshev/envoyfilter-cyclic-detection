@@ -20,7 +20,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y conntrack
-          
+
       # Set up Minikube
       - name: Set up Minikube
         run: |
