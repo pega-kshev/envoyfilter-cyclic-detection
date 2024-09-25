@@ -58,7 +58,21 @@ jobs:
 
           [Install]
           WantedBy=multi-user.target' | sudo tee /etc/systemd/system/cri-docker.service
-    
+          
+          # Create the socket file
+          echo '[Unit]
+          Description=CRI Dockerd Socket for the API
+          PartOf=cri-docker.service
+
+          [Socket]
+          ListenStream=/var/run/cri-dockerd.sock
+          SocketMode=0660
+          SocketUser=root
+          SocketGroup=docker
+
+          [Install]
+          WantedBy=sockets.target' | sudo tee /etc/systemd/system/cri-docker.socket
+          
           sudo systemctl daemon-reload
           sudo systemctl enable cri-docker.service
           sudo systemctl enable cri-docker.socket
