@@ -43,9 +43,22 @@ jobs:
           wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.0/cri-dockerd-v0.2.0-linux-amd64.tar.gz
           sudo tar -zxvf cri-dockerd-v0.2.0-linux-amd64.tar.gz -C /usr/local/bin/
           rm cri-dockerd-v0.2.0-linux-amd64.tar.gz
-          if [ -f /usr/local/bin/cri-dockerd.service ]; then
-            sudo cp /usr/local/bin/cri-dockerd.service /etc/systemd/system/
-          fi
+    
+          # Create the service file
+          echo '[Unit]
+          Description=CRI Dockerd
+          Documentation=https://github.com/Mirantis/cri-dockerd
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/local/bin/cri-dockerd
+          Restart=always
+          RestartSec=5
+          StartLimitInterval=0
+
+          [Install]
+          WantedBy=multi-user.target' | sudo tee /etc/systemd/system/cri-docker.service
+    
           sudo systemctl daemon-reload
           sudo systemctl enable cri-docker.service
           sudo systemctl start cri-docker.service
