@@ -48,6 +48,17 @@ jobs:
       - name: Port Forward ServiceA
         run: nohup kubectl port-forward svc/servicea 8080:8080 &
 
+      - name: Verify Services
+        run: |
+          kubectl get pods
+          kubectl get services
+
+      - name: Port Forward ServiceA
+        run: nohup kubectl port-forward svc/servicea 8080:8080 &
+
+      - name: Wait for Service
+        run: sleep 60  # Adjust the sleep time if needed
+        
   run_tests:
     runs-on: ubuntu-latest
     needs: deploy
