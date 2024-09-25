@@ -41,20 +41,17 @@ jobs:
       - name: Install cri-dockerd
         run: |
           sudo apt-get install -y golang-go
-          git clone https://github.com/Mirantis/cri-dockerd.git
-          cd cri-dockerd
-          mkdir bin
-          go build -o bin/cri-dockerd
-          sudo mv bin/cri-dockerd /usr/local/bin/
-          sudo cp packaging/systemd/* /etc/systemd/system/
+          wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.0/cri-dockerd-v0.2.0-linux-amd64.tar.gz
+          sudo tar -zxvf cri-dockerd-v0.2.0-linux-amd64.tar.gz -C /usr/local/bin/
+          rm cri-dockerd-v0.2.0-linux-amd64.tar.gz
+          sudo cp /usr/local/bin/cri-dockerd /usr/local/bin/
+          sudo cp /usr/local/bin/cri-dockerd.service /etc/systemd/system/
           sudo systemctl daemon-reload
           sudo systemctl enable cri-docker.service
-          sudo systemctl enable cri-docker.socket
           sudo systemctl start cri-docker.service
-          sudo systemctl restart cri-docker
-          cd ..
+    
 
-      # Set up Minikube
+    # Set up Minikube
       - name: Set up Minikube
         run: |
           curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
