@@ -1,65 +1,18 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  - pull_request
 
 jobs:
   setup_services:
     runs-on: ubuntu-latest
-
+    name: deploy test-services chart on minikube and run tests
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.23'
-
-      # Install necessary dependencies
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y conntrack
-          curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.0/crictl-v1.31.0-linux-amd64.tar.gz
-          sudo tar zxvf crictl-v1.31.0-linux-amd64.tar.gz -C /usr/local/bin
-          rm -f crictl-v1.31.0-linux-amd64.tar.gz
-      - name: Install CNI Plugins
-        run: |
-          CNI_PLUGIN_VERSION="v1.5.1"
-          CNI_PLUGIN_TAR="cni-plugins-linux-amd64-$CNI_PLUGIN_VERSION.tgz"
-          CNI_PLUGIN_INSTALL_DIR="/opt/cni/bin"
-          curl -LO "https://github.com/containernetworking/plugins/releases/download/$CNI_PLUGIN_VERSION/$CNI_PLUGIN_TAR"
-          sudo mkdir -p "$CNI_PLUGIN_INSTALL_DIR"
-          sudo tar -xf "$CNI_PLUGIN_TAR" -C "$CNI_PLUGIN_INSTALL_DIR"
-          rm "$CNI_PLUGIN_TAR"
-      # Install cri-dockerd
-      - name: Install cri-dockerd
-        run: |
-          sudo apt-get install -y golang-go
-          git clone https://github.com/Mirantis/cri-dockerd.git
-          cd cri-dockerd
-          mkdir bin
-          go build -o bin/cri-dockerd
-          sudo mv bin/cri-dockerd /usr/local/bin/
-          sudo cp packaging/systemd/* /etc/systemd/system/
-          sudo systemctl daemon-reload
-          sudo systemctl enable cri-docker.service
-          sudo systemctl enable cri-docker.socket
-          sudo systemctl start cri-docker.service
-          sudo systemctl restart cri-docker
-          cd ..
-
       # Set up Minikube
-      - name: Set up Minikube
-        run: |
-          curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          sudo install minikube /usr/local/bin/
-          minikube start --driver=none
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@latest
 
       # Install Istio
       - name: Install Istio
