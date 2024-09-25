@@ -45,15 +45,14 @@ jobs:
           cd cri-dockerd
           mkdir bin
           go build -o bin/cri-dockerd
-          mv bin/cri-dockerd /usr/local/bin/
-          cp packaging/systemd/* /etc/systemd/system/
-          systemctl daemon-reload
-          systemctl enable cri-docker.service
-          systemctl enable cri-docker.socket
-          systemctl start cri-docker.service
-          systemctl restart cri-docker
+          sudo mv bin/cri-dockerd /usr/local/bin/
+          sudo cp packaging/systemd/* /etc/systemd/system/
+          sudo systemctl daemon-reload
+          sudo systemctl enable cri-docker.service
+          sudo systemctl enable cri-docker.socket
+          sudo systemctl start cri-docker.service
+          sudo systemctl restart cri-docker
           cd ..
-          rm -rf cri-dockerd
 
       # Set up Minikube
       - name: Set up Minikube
