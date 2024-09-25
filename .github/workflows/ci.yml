@@ -40,12 +40,12 @@ jobs:
       # Install cri-dockerd
       - name: Install cri-dockerd
         run: |
-          sudo apt-get install -y golang-go
           wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.0/cri-dockerd-v0.2.0-linux-amd64.tar.gz
           sudo tar -zxvf cri-dockerd-v0.2.0-linux-amd64.tar.gz -C /usr/local/bin/
           rm cri-dockerd-v0.2.0-linux-amd64.tar.gz
-          sudo cp /usr/local/bin/cri-dockerd /usr/local/bin/
-          sudo cp /usr/local/bin/cri-dockerd.service /etc/systemd/system/
+          if [ -f /usr/local/bin/cri-dockerd.service ]; then
+            sudo cp /usr/local/bin/cri-dockerd.service /etc/systemd/system/
+          fi
           sudo systemctl daemon-reload
           sudo systemctl enable cri-docker.service
           sudo systemctl start cri-docker.service
