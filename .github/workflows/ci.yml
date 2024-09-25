@@ -25,11 +25,18 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y conntrack
-          sudo apt-get install -y containernetworking-plugins
           curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.0/crictl-v1.31.0-linux-amd64.tar.gz
           sudo tar zxvf crictl-v1.31.0-linux-amd64.tar.gz -C /usr/local/bin
           rm -f crictl-v1.31.0-linux-amd64.tar.gz
-
+      - name: Install CNI Plugins
+        run: |
+          CNI_PLUGIN_VERSION="v1.5.1"
+          CNI_PLUGIN_TAR="cni-plugins-linux-amd64-$CNI_PLUGIN_VERSION.tgz"
+          CNI_PLUGIN_INSTALL_DIR="/opt/cni/bin"
+          curl -LO "https://github.com/containernetworking/plugins/releases/download/$CNI_PLUGIN_VERSION/$CNI_PLUGIN_TAR"
+          sudo mkdir -p "$CNI_PLUGIN_INSTALL_DIR"
+          sudo tar -xf "$CNI_PLUGIN_TAR" -C "$CNI_PLUGIN_INSTALL_DIR"
+          rm "$CNI_PLUGIN_TAR"
       # Install cri-dockerd
       - name: Install cri-dockerd
         run: |
