@@ -1,7 +1,7 @@
 import requests
 
 # Define the base URL for ServiceA
-base_url = 'http://servicea:8080'
+base_url = 'http://localhost:8080'
 
 # Number of requests to send
 num_requests = 15
