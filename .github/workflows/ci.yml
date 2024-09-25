@@ -61,7 +61,10 @@ jobs:
     
           sudo systemctl daemon-reload
           sudo systemctl enable cri-docker.service
+          sudo systemctl enable cri-docker.socket
+          sudo systemctl start cri-docker.socket
           sudo systemctl start cri-docker.service
+    
     
 
     # Set up Minikube
