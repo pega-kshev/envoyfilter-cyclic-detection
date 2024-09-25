@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  servicea:
+    image: sagarv48/servicea
+    ports:
+      - "8090:8080"
+    environment:
+      - SERVICE_B_URL=http://serviceb:8080
+
+  serviceb:
+    image: sagarv48/serviceb
+    ports:
+      - "8091:8080"
+    environment:
+      - SERVICE_A_URL=http://servicea:8080
+
+  envoy:
+    image: envoyproxy/envoy:v1.26.0
+    ports:
+      - "8082:8080"  # Expose Envoy on 8082
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml

@@ -53,7 +53,10 @@ def call_serviceA():
         logging.error(f"Error calling ServiceA: {e}")
         return jsonify(error="ServiceA call failed"), response_code
 
-    return f"ServiceB called ServiceA with trace ID: {trace_id}\nResponse from ServiceA: {response.text}"
+    return jsonify({
+        "message": f"ServiceB called ServiceA with trace ID: {trace_id}",
+        "response": response.text
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

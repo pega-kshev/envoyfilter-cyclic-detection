@@ -24,6 +24,18 @@ jobs:
           sudo tar zxvf crictl-v1.31.0-linux-amd64.tar.gz -C /usr/local/bin
           rm -f crictl-v1.31.0-linux-amd64.tar.gz
 
+      # Install cri-dockerd
+      - name: Install cri-dockerd
+        run: |
+          sudo apt-get install -y golang-go
+          git clone https://github.com/Mirantis/cri-dockerd.git
+          cd cri-dockerd
+          mkdir bin
+          go build -o bin/cri-dockerd
+          sudo mv bin/cri-dockerd /usr/local/bin/
+          cd ..
+          rm -rf cri-dockerd
+
       # Set up Minikube
       - name: Set up Minikube
         run: |
@@ -99,4 +111,4 @@ jobs:
 
       - name: Run Envoy Filter Test
         run: |
-          python path/to/your/script/test_envoy_filter.py
+          python test_envoy_filter.py
