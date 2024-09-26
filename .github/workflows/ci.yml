@@ -1,105 +1,49 @@
-name: Deploy to Minikube
+name: CI Pipeline
 
-on:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Minikube
-        uses: manusa/actions-setup-minikube@v2.11.0
-        with:
-          minikube version: 'v1.33.0'
-          kubernetes version: 'v1.30.0'
-          driver: 'docker'
-
-      - name: Start Minikube
-        run: minikube start
-
-      - name: Install Istio
         run: |
-          curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.18.0 sh -
-          cd istio-1.18.0
-          export PATH=$PWD/bin:$PATH
-          istioctl install --set profile=demo -y
-
-      - name: Verify Istio Installation
-        run: kubectl get pods -n istio-system
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: 'latest'
+          curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          chmod +x minikube
+          sudo mv minikube /usr/local/bin/
+          minikube start --driver=docker
 
       - name: Deploy Helm Chart
-        run: helm upgrade --install test-services ./test-services
-
-      # Apply EnvoyFilter
-      - name: Apply EnvoyFilter
         run: |
-          kubectl apply -f envoyfilter.yaml
+          helm install test-services ./path/to/your/helm/chart
+
+      - name: List Pods
+        run: kubectl get pods
+
+      - name: View Logs for ServiceA
+        run: |
+          POD_NAME=$(kubectl get pods -l app=servicea -o jsonpath="{.items[0].metadata.name}")
+          kubectl logs $POD_NAME
+
+      - name: View Logs for ServiceB
+        run: |
+          POD_NAME=$(kubectl get pods -l app=serviceb -o jsonpath="{.items[0].metadata.name}")
+          kubectl logs $POD_NAME
+
       - name: Port Forward ServiceA
-        run: nohup kubectl port-forward svc/servicea 8080:8080 &
-
-      - name: Verify Services
         run: |
-          kubectl get pods
-          kubectl get services
+          kubectl port-forward svc/servicea 8080:80 &
 
-      - name: Port Forward ServiceA
-        run: nohup kubectl port-forward svc/servicea 8080:8080 &
-
-      - name: Wait for Service
-        run: sleep 60  # Adjust the sleep time if needed
-        
-  run_tests:
-    runs-on: ubuntu-latest
-    needs: deploy
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install JMeter
+      - name: Port Forward ServiceB
         run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-11-jre
-          wget https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz
-          tar -xvzf apache-jmeter-5.6.3.tgz
-          export JMETER_HOME=$(pwd)/apache-jmeter-5.6.3
-          export PATH=$PATH:$JMETER_HOME/bin
+          kubectl port-forward svc/serviceb 8081:80 &
 
-      - name: Run JMeter Tests
+      - name: Run Tests
         run: |
-          sed -i 's|http://servicea:8080/|http://localhost:8080/|g' test_plan.jmx
-          ./apache-jmeter-5.6.3/bin/jmeter -n -t test_plan.jmx -l results.jtl
-
-      - name: Check Test Results
-        run: |
-          cat results.jtl
-
-  test_envoy_filter:
-    runs-on: ubuntu-latest
-    needs: deploy
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Install Requests Library
-        run: |
-          python -m pip install requests
-
-      - name: Run Envoy Filter Test
-        run: |
+          # Update the base_url in your test script to match the forwarded ports
+          sed -i 's|http://localhost:8080|http://localhost:8081|g' test_envoy_filter.py
           python test_envoy_filter.py
