@@ -55,6 +55,16 @@ jobs:
           sleep 10  # Wait for port forwarding to be established
           curl -I http://localhost:8081
 
+      - name: View Logs for ServiceA
+        run: |
+          POD_NAME=$(kubectl get pods -l app=servicea -o jsonpath="{.items[0].metadata.name}")
+          kubectl logs $POD_NAME
+
+      - name: View Logs for ServiceB
+        run: |
+          POD_NAME=$(kubectl get pods -l app=serviceb -o jsonpath="{.items[0].metadata.name}")
+          kubectl logs $POD_NAME
+
       - name: Run Tests
         run: |
           # Update the base_url in your test script to match the forwarded ports
