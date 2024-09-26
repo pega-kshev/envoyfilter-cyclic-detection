@@ -19,7 +19,7 @@ jobs:
 
       - name: Deploy Helm Chart
         run: |
-          helm install test-services ./path/to/your/helm/chart
+          helm install test-services ./test-services
 
       - name: List Pods
         run: kubectl get pods
