@@ -21,6 +21,9 @@ jobs:
         run: |
           helm install test-services ./test-services
 
+      - name: Wait for Service
+        run: sleep 60  # Adjust the sleep time if needed
+
       - name: List Pods
         run: kubectl get pods
 
