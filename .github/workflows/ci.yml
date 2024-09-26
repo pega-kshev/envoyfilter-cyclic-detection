@@ -39,11 +39,11 @@ jobs:
 
       - name: Port Forward ServiceA
         run: |
-          kubectl port-forward svc/servicea 8080:80 &
+          kubectl port-forward svc/servicea 8080:8080 &
 
       - name: Port Forward ServiceB
         run: |
-          kubectl port-forward svc/serviceb 8081:80 &
+          kubectl port-forward svc/serviceb 8081:8080 &
 
       - name: Run Tests
         run: |
