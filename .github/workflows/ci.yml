@@ -45,6 +45,16 @@ jobs:
         run: |
           kubectl port-forward svc/serviceb 8081:8080 &
 
+      - name: Curl ServiceA Endpoint
+        run: |
+          sleep 10  # Wait for port forwarding to be established
+          curl -I http://localhost:8080
+
+      - name: Curl ServiceB Endpoint
+        run: |
+          sleep 10  # Wait for port forwarding to be established
+          curl -I http://localhost:8081
+
       - name: Run Tests
         run: |
           # Update the base_url in your test script to match the forwarded ports
